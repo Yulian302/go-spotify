@@ -1,12 +1,16 @@
 package auth
 
 import (
+	"context"
 	"log"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"gospotify.com/db"
 	"gospotify.com/models"
+	"gospotify.com/utils"
 )
 
 type User = models.User
@@ -43,12 +47,23 @@ func authenticator() func(c *gin.Context) (interface{}, error) {
 		if err := c.ShouldBind(&loginVals); err != nil {
 			return "", jwt.ErrMissingLoginValues
 		}
-		userID := loginVals.Username
+		username := loginVals.Username
 		password := loginVals.Password
 
-		if (userID == "admin" && password == "admin") || (userID == "test" && password == "test") {
+		// search user in database
+		var user User
+		userErr := db.Client.Database("spotify_clone").Collection("users").FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
+		if userErr == nil {
+			// TODO add password check
+			if username == user.Username {
+				return &User{
+					Username: username,
+				}, nil
+			}
+		}
+		if username == "test" || password == "test" {
 			return &User{
-				Username: userID,
+				Username: username,
 			}, nil
 		}
 		return nil, jwt.ErrFailedAuthentication
@@ -105,17 +120,8 @@ func identityHandler() func(c *gin.Context) interface{} {
 
 func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
 	r.POST("/login", handle.LoginHandler)
-	r.NoRoute(handle.MiddlewareFunc(), handleNoRoute())
+	r.NoRoute(handle.MiddlewareFunc(), utils.HandleNoRoute())
 
 	auth := r.Group("/auth", handle.MiddlewareFunc())
 	auth.GET("/refresh_token", handle.RefreshHandler)
-}
-
-// 404
-func handleNoRoute() func(c *gin.Context) {
-	return func(c *gin.Context) {
-		claims := jwt.ExtractClaims(c)
-		log.Printf("NoRoute claims: %#v\n", claims)
-		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
-	}
 }

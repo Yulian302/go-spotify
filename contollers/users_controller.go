@@ -14,7 +14,7 @@ type User = models.User
 func UsersController(root *gin.RouterGroup, db *mongo.Database) {
 	usersRouter := root.Group("/users")
 
-	usersRouter.GET("", func(ctx *gin.Context) {
+	usersRouter.GET("", func(c *gin.Context) {
 		var users []User
 		usersColl := db.Collection("users")
 		cursor, usersErr := usersColl.Find(context.TODO(), gin.H{"is_artist": false})
@@ -22,14 +22,14 @@ func UsersController(root *gin.RouterGroup, db *mongo.Database) {
 			panic(usersErr)
 		}
 		if usersErr := cursor.All(context.TODO(), &users); usersErr != nil {
-			utils.HandleError(ctx, usersErr, "Failed to find users")
+			utils.HandleError(c, usersErr, "Failed to find users")
 			panic(usersErr)
 		}
 
-		utils.JsonResponseOk(ctx, users)
+		utils.JsonResponseOk(c, users)
 	})
 
-	usersRouter.GET("/artists", func(ctx *gin.Context) {
+	usersRouter.GET("/artists", func(c *gin.Context) {
 		var artists []User
 		usersColl := db.Collection("users")
 		cursor, usersErr := usersColl.Find(context.TODO(), gin.H{"is_artist": true})
@@ -37,9 +37,9 @@ func UsersController(root *gin.RouterGroup, db *mongo.Database) {
 			panic(usersErr)
 		}
 		if usersErr := cursor.All(context.TODO(), &artists); usersErr != nil {
-			ctx.JSON(500, gin.H{"error": usersErr})
+			c.JSON(500, gin.H{"error": usersErr})
 			panic(usersErr)
 		}
-		utils.JsonResponseOk(ctx, artists)
+		utils.JsonResponseOk(c, artists)
 	})
 }
