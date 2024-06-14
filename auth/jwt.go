@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"log"
 	"time"
 
@@ -124,4 +126,11 @@ func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
 
 	auth := r.Group("/auth", handle.MiddlewareFunc())
 	auth.GET("/refresh_token", handle.RefreshHandler)
+}
+
+func hashSha256(stringToHash string) (string, error) {
+	hasher := sha256.New()
+	hasher.Write([]byte(stringToHash))
+	hash := hex.EncodeToString(hasher.Sum(nil))
+	return hash, nil
 }
