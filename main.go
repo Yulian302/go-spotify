@@ -3,20 +3,25 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/gofor-little/env"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"gospotify.com/auth"
+	"gospotify.com/contollers"
 	"gospotify.com/types"
 )
 
 const ENV_FILE_PATH = ".env"
 
 // importing types
-type User = types.User
+
+type UserLogin = types.Login
 
 func main() {
 
@@ -52,27 +57,31 @@ func main() {
 	// choosing db
 	db := client.Database(dbName)
 
+	// root router
 	router := gin.New()
+
+	// jwt middleware
+	authMiddleware, err := jwt.New(auth.InitJwtParams())
+	if err != nil {
+		log.Fatal("JWT error: ", err.Error())
+	}
+	router.Use(auth.HandlerMiddleWare(authMiddleware))
+	auth.RegisterRoute(router, authMiddleware)
+
+	// api routes group
 	apiRouter := router.Group("/api/v1")
+
 	apiRouter.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
 
-	usersRouter := apiRouter.Group("/users")
-	usersRouter.GET("/", func(ctx *gin.Context) {
-		var users []User
-		usersColl := db.Collection("users")
-		cursor, usersErr := usersColl.Find(context.TODO(), gin.H{})
-		if usersErr != nil {
-			panic(err)
-		}
-		if usersErr := cursor.All(context.TODO(), &users); usersErr != nil {
-			ctx.JSON(500, gin.H{"error": err})
-			panic(usersErr)
-		}
-		ctx.JSON(200, gin.H{"data": users})
-	})
+	// users routes
+	contollers.UsersController(apiRouter, db)
+
+	// songs routes
+	contollers.SongsController(apiRouter, db)
+
 	router.Run("localhost:8081")
 }
