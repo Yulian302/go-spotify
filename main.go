@@ -2,44 +2,30 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"gospotify.com/auth"
 	"gospotify.com/contollers"
+	"gospotify.com/db"
 	env "gospotify.com/env"
 )
 
 func main() {
 	env.LoadEnv()
-	// mongodb config and connection
-	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://%s:%s@%s.hfa617f.mongodb.net/?retryWrites=true&w=majority&appName=%s", env.ClusterName, env.UserPassword, strings.ToLower(env.ClusterName), env.ClusterName)).SetServerAPIOptions(serverAPI)
 
-	// create a new client and connect to the server
-	client, err := mongo.Connect(context.TODO(), opts)
-	if err != nil {
-		panic(err)
-	}
+	// init db connection
+	client, err := db.DbClient()
 	defer func() {
 		if err = client.Disconnect(context.TODO()); err != nil {
 			panic(err)
 		}
 	}()
-
-	// send a ping to confirm a successful connection
-	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Err(); err != nil {
-		panic(err)
+	if err != nil {
+		log.Fatal(err)
 	}
-	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
-
-	// choosing db
+	// choosing database
 	db := client.Database(env.DbName)
 
 	// root router
