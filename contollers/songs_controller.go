@@ -5,11 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
-	"gospotify.com/types"
+	"gospotify.com/models"
 	"gospotify.com/utils"
 )
 
-type Song = types.Song
+type Song = models.Song
 
 func SongsController(root *gin.RouterGroup, db *mongo.Database) {
 	songsRouter := root.Group("/songs")

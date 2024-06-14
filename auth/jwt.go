@@ -6,11 +6,11 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	"gospotify.com/types"
+	"gospotify.com/models"
 )
 
-type User = types.User
-type UserLogin = types.Login
+type User = models.User
+type UserLogin = models.Login
 
 var (
 	identityKey = "id"

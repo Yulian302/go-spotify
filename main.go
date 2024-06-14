@@ -8,34 +8,19 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/gofor-little/env"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gospotify.com/auth"
 	"gospotify.com/contollers"
-	"gospotify.com/types"
+	env "gospotify.com/env"
 )
 
-const ENV_FILE_PATH = ".env"
-
-// importing types
-
-type UserLogin = types.Login
-
 func main() {
-
-	// environment variables
-	if err := env.Load(ENV_FILE_PATH); err != nil {
-		panic(err)
-	}
-	clusterName := env.Get("CLUSTER_NAME", "")
-	userPassword := env.Get("CLUSTER_USER_PASSWD", "")
-	dbName := env.Get("DB_NAME", "")
-
+	env.LoadEnv()
 	// mongodb config and connection
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://%s:%s@%s.hfa617f.mongodb.net/?retryWrites=true&w=majority&appName=%s", clusterName, userPassword, strings.ToLower(clusterName), clusterName)).SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://%s:%s@%s.hfa617f.mongodb.net/?retryWrites=true&w=majority&appName=%s", env.ClusterName, env.UserPassword, strings.ToLower(env.ClusterName), env.ClusterName)).SetServerAPIOptions(serverAPI)
 
 	// create a new client and connect to the server
 	client, err := mongo.Connect(context.TODO(), opts)
@@ -55,7 +40,7 @@ func main() {
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 
 	// choosing db
-	db := client.Database(dbName)
+	db := client.Database(env.DbName)
 
 	// root router
 	router := gin.New()
