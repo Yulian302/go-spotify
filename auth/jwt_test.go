@@ -5,11 +5,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gospotify.com/utils"
 )
 
 func TestPasswordHash(t *testing.T) {
 	password := "123"
-	hash, err := hashSha256(password)
+	hash, err := utils.HashSha256(password)
 	if err != nil {
 		t.Error(err)
 	}
@@ -19,12 +20,12 @@ func TestPasswordHash(t *testing.T) {
 
 func TestPasswordHashAreSame(t *testing.T) {
 	passwordOne := "3022003"
-	hashOne, err := hashSha256(passwordOne)
+	hashOne, err := utils.HashSha256(passwordOne)
 	if err != nil {
 		t.Error(err)
 	}
 	passwordTwo := "3022003"
-	hashTwo, err := hashSha256(passwordTwo)
+	hashTwo, err := utils.HashSha256(passwordTwo)
 	if err != nil {
 		t.Error(err)
 	}

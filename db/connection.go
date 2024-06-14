@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	Db         *mongo.Database
 	Client     *mongo.Client
 	ClientErr  error
 	ClientOnce sync.Once
@@ -36,6 +37,8 @@ func DbClient() (*mongo.Client, error) {
 				panic(err)
 			}
 			fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
+			// choosing database
+			Db = Client.Database(env.DbName)
 		})
 	return Client, nil
 }

@@ -2,8 +2,6 @@ package auth
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"log"
 	"time"
 
@@ -51,13 +49,17 @@ func authenticator() func(c *gin.Context) (interface{}, error) {
 		}
 		username := loginVals.Username
 		password := loginVals.Password
+		hashedPassword, err := utils.HashSha256(password)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		// search user in database
 		var user User
 		userErr := db.Client.Database("spotify_clone").Collection("users").FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
 		if userErr == nil {
 			// TODO add password check
-			if username == user.Username {
+			if username == user.Username && hashedPassword == user.Password {
 				return &User{
 					Username: username,
 				}, nil
@@ -118,19 +120,16 @@ func identityHandler() func(c *gin.Context) interface{} {
 	}
 }
 
+// custom handlers
+
 // registering routes
 
 func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
 	r.POST("/login", handle.LoginHandler)
+	r.POST("/logout", handle.LogoutHandler)
+
 	r.NoRoute(handle.MiddlewareFunc(), utils.HandleNoRoute())
 
 	auth := r.Group("/auth", handle.MiddlewareFunc())
 	auth.GET("/refresh_token", handle.RefreshHandler)
-}
-
-func hashSha256(stringToHash string) (string, error) {
-	hasher := sha256.New()
-	hasher.Write([]byte(stringToHash))
-	hash := hex.EncodeToString(hasher.Sum(nil))
-	return hash, nil
 }

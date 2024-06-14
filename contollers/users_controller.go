@@ -42,4 +42,5 @@ func UsersController(root *gin.RouterGroup, db *mongo.Database) {
 		}
 		utils.JsonResponseOk(c, artists)
 	})
+
 }
