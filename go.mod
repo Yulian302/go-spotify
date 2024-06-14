@@ -2,11 +2,16 @@ module gospotify.com
 
 go 1.22.2
 
-require github.com/gin-gonic/gin v1.10.0
+require (
+	github.com/appleboy/gin-jwt/v2 v2.9.2
+	github.com/gin-gonic/gin v1.10.0
+)
 
 require (
+	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
