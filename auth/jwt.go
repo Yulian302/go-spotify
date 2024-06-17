@@ -13,8 +13,8 @@ import (
 	"gospotify.com/utils"
 )
 
-type User = models.User
-type UserLogin = models.Login
+type User = models.UserDb
+type UserLogin = models.LoginUserForm
 
 var (
 	identityKey = "id"

@@ -88,6 +88,5 @@ func main() {
 
 	// users routes
 	contollers.UsersController(apiRouterPublic, db.Db)
-
 	router.Run("localhost:8081")
 }

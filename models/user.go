@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type User struct {
+type UserDb struct {
 	Username   string    `bson:"username"`
 	Password   string    `bson:"password"`
 	Salt       string    `bson:"salt"`
@@ -10,7 +10,7 @@ type User struct {
 	IsArtist   bool      `bson:"is_artist"`
 }
 
-type Login struct {
+type LoginUserForm struct {
 	Username string `form:"username" json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
 }

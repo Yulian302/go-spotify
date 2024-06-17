@@ -13,7 +13,7 @@ import (
 	"gospotify.com/utils"
 )
 
-type User = models.User
+type User = models.UserDb
 type RegUserForm = models.RegisterUserForm
 type RegUserDb = models.RegisterUserDb
 
