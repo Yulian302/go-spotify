@@ -49,16 +49,17 @@ func authenticator() func(c *gin.Context) (interface{}, error) {
 		}
 		username := loginVals.Username
 		password := loginVals.Password
-		hashedPassword, err := utils.HashSha256(password)
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		// search user in database
 		var user User
 		userErr := db.Client.Database("spotify_clone").Collection("users").FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
+
+		// if user is found
 		if userErr == nil {
-			// TODO add password check
+			hashedPassword, err := utils.HashSha256(password + user.Salt)
+			if err != nil {
+				log.Fatal(err)
+			}
 			if username == user.Username && hashedPassword == user.Password {
 				return &User{
 					Username: username,

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	"log"
 	"net/http"
 
@@ -12,8 +13,6 @@ import (
 	"gospotify.com/contollers"
 	"gospotify.com/db"
 	env "gospotify.com/env"
-	"gospotify.com/models"
-	"gospotify.com/utils"
 )
 
 func handleWs(c *gin.Context) {
@@ -80,7 +79,7 @@ func main() {
 			"message": "pong",
 		})
 	})
-	apiRouterPublic.POST("/register", RegisterHandler)
+	apiRouterPublic.POST("/register", contollers.RegisterHandler)
 
 	// private routes
 	apiRouterPrivate := router.Group("/api/v1")
@@ -91,34 +90,4 @@ func main() {
 	contollers.UsersController(apiRouterPublic, db.Db)
 
 	router.Run("localhost:8081")
-}
-
-func RegisterHandler(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-	passwordHash, err := utils.HashSha256(password)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		panic(err)
-	}
-	if username == "" || password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Username or password is empty"})
-		return
-	}
-	user := models.User{
-		Username: username,
-		Password: passwordHash,
-	}
-	if err := db.Db.Collection("users").FindOne(context.TODO(), user).Err(); err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
-		return
-	}
-	cursor, err := db.Db.Collection("users").InsertOne(context.TODO(), user)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot create user: " + err.Error()})
-		panic(err)
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"id": cursor.InsertedID,
-	})
 }
