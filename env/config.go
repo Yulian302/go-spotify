@@ -1,8 +1,12 @@
 package env
 
-import "github.com/gofor-little/env"
+import (
+	"path/filepath"
 
-const ENV_FILE_PATH = ".env"
+	"github.com/gofor-little/env"
+)
+
+var ENV_FILE_PATH, _ = filepath.Abs(".env")
 
 var (
 	ClusterName  string = ""

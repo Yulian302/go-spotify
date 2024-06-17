@@ -13,8 +13,8 @@ import (
 	"gospotify.com/utils"
 )
 
-type User = models.User
-type UserLogin = models.Login
+type User = models.UserDb
+type UserLogin = models.LoginUserForm
 
 var (
 	identityKey = "id"
@@ -53,9 +53,14 @@ func authenticator() func(c *gin.Context) (interface{}, error) {
 		// search user in database
 		var user User
 		userErr := db.Client.Database("spotify_clone").Collection("users").FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
+
+		// if user is found
 		if userErr == nil {
-			// TODO add password check
-			if username == user.Username {
+			hashedPassword, err := utils.HashSha256(password + user.Salt)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if username == user.Username && hashedPassword == user.Password {
 				return &User{
 					Username: username,
 				}, nil
@@ -116,10 +121,14 @@ func identityHandler() func(c *gin.Context) interface{} {
 	}
 }
 
+// custom handlers
+
 // registering routes
 
 func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
 	r.POST("/login", handle.LoginHandler)
+	r.POST("/logout", handle.LogoutHandler)
+
 	r.NoRoute(handle.MiddlewareFunc(), utils.HandleNoRoute())
 
 	auth := r.Group("/auth", handle.MiddlewareFunc())
