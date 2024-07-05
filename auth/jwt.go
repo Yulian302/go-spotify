@@ -8,6 +8,7 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"gospotify.com/contollers"
 	"gospotify.com/db"
 	"gospotify.com/models"
 	"gospotify.com/utils"
@@ -52,7 +53,7 @@ func authenticator() func(c *gin.Context) (interface{}, error) {
 
 		// search user in database
 		var user User
-		userErr := db.Client.Database("spotify_clone").Collection("users").FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
+		userErr := db.Db.Collection("users").FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
 
 		// if user is found
 		if userErr == nil {
@@ -76,7 +77,7 @@ func authenticator() func(c *gin.Context) (interface{}, error) {
 }
 func authorizator() func(data interface{}, c *gin.Context) bool {
 	return func(data interface{}, c *gin.Context) bool {
-		if v, ok := data.(*User); ok && v.Username == "admin" {
+		if v, ok := data.(*User); ok && v.IsAdmin {
 			return true
 		}
 		return false
@@ -115,8 +116,15 @@ func HandlerMiddleWare(authMiddleware *jwt.GinJWTMiddleware) gin.HandlerFunc {
 func identityHandler() func(c *gin.Context) interface{} {
 	return func(c *gin.Context) interface{} {
 		claims := jwt.ExtractClaims(c)
+		var user User
+		userErr := db.Db.Collection("users").FindOne(context.TODO(), bson.M{"username": claims[identityKey]}).Decode(&user)
+		if userErr != nil {
+			log.Println("Error retrieving user from database: ", userErr)
+			return nil
+		}
 		return &User{
 			Username: claims[identityKey].(string),
+			IsAdmin:  user.IsAdmin,
 		}
 	}
 }
@@ -133,4 +141,8 @@ func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
 
 	auth := r.Group("/auth", handle.MiddlewareFunc())
 	auth.GET("/refresh_token", handle.RefreshHandler)
+
+	auth.GET("/hello", contollers.HelloHandler)
+	contollers.UsersController(auth, db.Db)
+	contollers.SongsController(auth, db.Db)
 }

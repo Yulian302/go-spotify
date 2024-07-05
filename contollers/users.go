@@ -79,11 +79,13 @@ func RegisterHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
 		return
 	}
+
 	cursor, err := db.Db.Collection("users").InsertOne(context.TODO(), user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot create user: " + err.Error()})
 		panic(err)
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"id": cursor.InsertedID,
 	})

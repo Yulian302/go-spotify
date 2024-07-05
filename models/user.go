@@ -8,6 +8,7 @@ type UserDb struct {
 	Salt       string    `bson:"salt"`
 	DateJoined time.Time `bson:"date_joined"`
 	IsArtist   bool      `bson:"is_artist"`
+	IsAdmin    bool      `bson:"is_admin"`
 }
 
 type LoginUserForm struct {
