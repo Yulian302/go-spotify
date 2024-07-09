@@ -37,7 +37,7 @@ func InitJwtParams() *jwt.GinJWTMiddleware {
 		Unauthorized:    unauthorized(),
 		TokenLookup:     "header: Authorization, query: token, cookie: jwt",
 		// TokenLookup: "query:token",
-		// TokenLookup: "cookie:token",
+		// TokenLookup:   "cookie:token",
 		TokenHeadName: "Bearer",
 		TimeFunc:      time.Now,
 	}
@@ -59,6 +59,7 @@ func authenticator() func(c *gin.Context) (interface{}, error) {
 		if userErr == nil {
 			hashedPassword, err := utils.HashSha256(password + user.Salt)
 			if err != nil {
+
 				log.Fatal(err)
 			}
 			if username == user.Username && hashedPassword == user.Password {
