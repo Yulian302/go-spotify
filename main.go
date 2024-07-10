@@ -6,6 +6,7 @@ import (
 	"log"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gospotify.com/auth"
 	"gospotify.com/contollers"
@@ -29,6 +30,14 @@ func main() {
 
 	// root router
 	router := gin.New()
+	// CORS
+	router.Use(cors.New(cors.Config{
+		AllowMethods:     []string{"*"},
+		AllowAllOrigins:  true,
+		AllowHeaders:     []string{"*"},
+		AllowCredentials: true,
+	}))
+
 	router.GET("/ping", contollers.HandlePong)
 	router.GET("/ws", contollers.HandleWs)
 
@@ -41,6 +50,7 @@ func main() {
 	// public routes
 	// api routes group
 	apiRouterPublic := router.Group("/api/v1")
+
 	// songs routes
 	contollers.SongsController(apiRouterPublic, db.Db)
 
