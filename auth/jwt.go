@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"log"
+	"net/http"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -131,16 +132,22 @@ func identityHandler() func(c *gin.Context) interface{} {
 }
 
 // custom handlers
+func verifyToken(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	c.JSON(http.StatusOK, gin.H{
+		"username": claims["id"],
+	})
+}
 
 // registering routes
 
 func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
 	r.POST("/login", handle.LoginHandler)
 	r.POST("/logout", handle.LogoutHandler)
-
 	r.NoRoute(handle.MiddlewareFunc(), utils.HandleNoRoute())
 
 	auth := r.Group("/auth", handle.MiddlewareFunc())
+	auth.POST("/verify_token", verifyToken)
 	auth.GET("/refresh_token", handle.RefreshHandler)
 
 	auth.GET("/hello", contollers.HelloHandler)
