@@ -9,6 +9,7 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"gospotify.com/authorization"
 	"gospotify.com/contollers"
 	"gospotify.com/db"
 	"gospotify.com/models"
@@ -79,7 +80,7 @@ func authenticator() func(c *gin.Context) (interface{}, error) {
 }
 func authorizator() func(data interface{}, c *gin.Context) bool {
 	return func(data interface{}, c *gin.Context) bool {
-		if v, ok := data.(*User); ok && v.IsAdmin {
+		if v, ok := data.(*User); ok && authorization.IsUserAdmin(v) {
 			return true
 		}
 		return false
@@ -149,8 +150,7 @@ func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
 	auth := r.Group("/auth", handle.MiddlewareFunc())
 	auth.POST("/verify_token", verifyToken)
 	auth.GET("/refresh_token", handle.RefreshHandler)
-
 	auth.GET("/hello", contollers.HelloHandler)
+
 	contollers.UsersController(auth, db.Db)
-	contollers.SongsController(auth, db.Db)
 }

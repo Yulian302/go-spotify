@@ -48,23 +48,26 @@ func main() {
 	}
 
 	// public routes
-	// api routes group
 	apiRouterPublic := router.Group("/api/v1")
 
-	// songs routes
+	// songs
 	contollers.SongsController(apiRouterPublic, db.Db)
 
+	// ping pong
 	apiRouterPublic.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
+
+	// register
 	router.POST("/register", contollers.RegisterHandler)
 
 	// private routes
 	apiRouterPrivate := router.Group("/api/v1")
 	apiRouterPrivate.Use(auth.HandlerMiddleWare(authMiddleware))
 	apiRouterPrivate.GET("/hello", contollers.HelloHandler)
+
 	auth.RegisterRoute(router, authMiddleware)
 
 	// users routes
