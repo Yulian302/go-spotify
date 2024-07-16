@@ -150,8 +150,7 @@ func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
 	auth := r.Group("/auth", handle.MiddlewareFunc())
 	auth.POST("/verify_token", verifyToken)
 	auth.GET("/refresh_token", handle.RefreshHandler)
-
 	auth.GET("/hello", contollers.HelloHandler)
+
 	contollers.UsersController(auth, db.Db)
-	contollers.SongsController(auth, db.Db)
 }
