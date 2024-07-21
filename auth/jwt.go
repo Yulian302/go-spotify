@@ -3,14 +3,11 @@ package auth
 import (
 	"context"
 	"log"
-	"net/http"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"gospotify.com/authorization"
-	"gospotify.com/contollers"
 	"gospotify.com/db"
 	"gospotify.com/models"
 	"gospotify.com/utils"
@@ -80,7 +77,16 @@ func authenticator() func(c *gin.Context) (interface{}, error) {
 }
 func authorizator() func(data interface{}, c *gin.Context) bool {
 	return func(data interface{}, c *gin.Context) bool {
-		if v, ok := data.(*User); ok && authorization.IsUserAdmin(v) {
+		if _, ok := data.(*User); ok {
+			return true
+		}
+		return false
+	}
+}
+
+func AdminAuthorizator() func(data interface{}, c *gin.Context) bool {
+	return func(data interface{}, c *gin.Context) bool {
+		if u, ok := data.(*User); ok && u.IsAdmin {
 			return true
 		}
 		return false
@@ -130,27 +136,4 @@ func identityHandler() func(c *gin.Context) interface{} {
 			IsAdmin:  user.IsAdmin,
 		}
 	}
-}
-
-// custom handlers
-func verifyToken(c *gin.Context) {
-	claims := jwt.ExtractClaims(c)
-	c.JSON(http.StatusOK, gin.H{
-		"username": claims["id"],
-	})
-}
-
-// registering routes
-
-func RegisterRoute(r *gin.Engine, handle *jwt.GinJWTMiddleware) {
-	r.POST("/login", handle.LoginHandler)
-	r.POST("/logout", handle.LogoutHandler)
-	r.NoRoute(handle.MiddlewareFunc(), utils.HandleNoRoute())
-
-	auth := r.Group("/auth", handle.MiddlewareFunc())
-	auth.POST("/verify_token", verifyToken)
-	auth.GET("/refresh_token", handle.RefreshHandler)
-	auth.GET("/hello", contollers.HelloHandler)
-
-	contollers.UsersController(auth, db.Db)
 }
