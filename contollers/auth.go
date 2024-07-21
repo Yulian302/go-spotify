@@ -64,6 +64,7 @@ func AuthController(r *gin.Engine, jwtMid *jwt.GinJWTMiddleware) {
 	TokenController(authorized, jwtMid)
 	authorized.GET("/hello", HelloHandler)
 
+	AdminController(authorized)
 }
 
 func TokenController(r *gin.RouterGroup, jwtMid *jwt.GinJWTMiddleware) {

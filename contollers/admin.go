@@ -1,4 +1,4 @@
-package admin
+package contollers
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gospotify.com/auth"
 	cauth "gospotify.com/auth"
-	"gospotify.com/contollers"
+
 	"gospotify.com/db"
 )
 
@@ -18,5 +18,5 @@ func AdminController(r *gin.RouterGroup) {
 	}
 	jwtAdminMid.Authorizator = cauth.AdminAuthorizator()
 	admin := r.Group("/admin", jwtAdminMid.MiddlewareFunc())
-	contollers.UsersController(admin, db.Db)
+	UsersController(admin, db.Db)
 }
