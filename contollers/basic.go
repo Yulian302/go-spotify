@@ -5,7 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
-
+func BasicController(r *gin.Engine){
+	
+}
 func HandlePong(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "pong")
 }
